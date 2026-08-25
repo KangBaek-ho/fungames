@@ -271,6 +271,7 @@ const BUILTIN_GAMES = [
     url:'https://kangbaek-ho.github.io/eatingsnakes/',
     homeUrl:'https://kangbaek-ho.github.io/snakeshome/',
     faqUrl:'https://kangbaek-ho.github.io/faq/',
+    thumbnail:'EatingSnakes.png',
     builtin:true,
     published:true,
     tag:'멀티플레이어 · 아케이드'
@@ -298,6 +299,7 @@ const BUILTIN_GAMES = [
     name:'The Bridge War',
     category:'총게임',
     url:'https://kangbaek-ho.github.io/wargame/',
+    thumbnail:'TheBridgeWar.png',
     builtin:true,
     published:true,
     tag:'슈팅 · 전투'
@@ -312,10 +314,21 @@ const BUILTIN_GAMES = [
     tag:'유틸리티 · 재미'
   },
   {
+    id:'builtin-wordchain',
+    name:'WordChain',
+    category:'퍼즐',
+    url:'https://kangbaek-ho.github.io/WordChain/',
+    thumbnail:'WordChain.png',
+    builtin:true,
+    published:true,
+    tag:'단어게임 · 퍼즐'
+  },
+  {
     id:'builtin-wargame-3d',
     name:'The Bridge War',
     category:'3D게임',
     url:'https://kangbaek-ho.github.io/wargame/',
+    thumbnail:'TheBridgeWar.png',
     builtin:true,
     published:true,
     tag:'슈팅 · 3D',
@@ -423,6 +436,7 @@ function genericThumbSVG(){
   </svg>`;
 }
 function thumbInnerHTML(game){
+  if(game.thumbnail) return `<img src="${escapeHtml(game.thumbnail)}" alt="${escapeHtml(game.name)}">`;
   if(game.id==='builtin-eating-snakes') return snakeThumbSVG();
   if(game.id==='builtin-chess') return chessThumbSVG();
   if(game.id==='builtin-build-a-house-3d' || game.id==='builtin-build-a-house-3d-cat') return houseThumbSVG();
@@ -458,6 +472,23 @@ document.addEventListener('click', (e)=>{
     playClickSound();
   }
 }, true);
+
+// ---- fullscreen: enter on first interaction, stays on across same-tab navigation ----
+function requestFullscreenSafe(){
+  const el = document.documentElement;
+  if(document.fullscreenElement || document.webkitFullscreenElement) return;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  if(req){
+    try{ req.call(el).catch(()=>{}); }catch(e){}
+  }
+}
+// Browsers block auto-fullscreen without a user gesture, so try immediately
+// (works if this page was itself opened by a user click) and also arm it
+// on the very first click/keydown/touch anywhere on the page.
+requestFullscreenSafe();
+['click','keydown','touchstart'].forEach(evt=>{
+  document.addEventListener(evt, requestFullscreenSafe, {once:true, capture:true});
+});
 
 const errorOverlay = document.getElementById('errorOverlay');
 const errorCodeEl = document.getElementById('errorCode');
@@ -505,7 +536,11 @@ async function attemptOpen(game){
   try{
     await fetch(game.url, {mode:'no-cors', signal:controller.signal, cache:'no-store'});
     clearTimeout(timer);
-    window.open(game.url, '_blank', 'noopener');
+    // Fullscreen state only carries over across a same-tab navigation, so
+    // request it here (this click is a valid user gesture) and navigate
+    // the current tab instead of opening a new one.
+    requestFullscreenSafe();
+    location.href = game.url;
   }catch(err){
     clearTimeout(timer);
     if(!navigator.onLine){
