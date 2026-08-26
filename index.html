@@ -102,6 +102,7 @@
     transition:transform .15s ease, box-shadow .15s ease;
   }
   .gameCard:hover{transform:translateY(-4px);box-shadow:6px 6px 0 var(--ink);}
+  .gameCard[data-bg="1"]{cursor:pointer;}
 
   .thumb{
     aspect-ratio:4/3;
@@ -217,6 +218,66 @@
   }
   .gameCloseBtn:hover{background:var(--grid);}
 
+  .settingsBtn{
+    font-weight:800;font-size:12px;letter-spacing:0.3px;
+    padding:9px 13px;border-radius:8px;border:2px solid var(--ink);
+    background:var(--paper);color:var(--ink);cursor:pointer;
+    display:flex;align-items:center;gap:6px;white-space:nowrap;
+    box-shadow:3px 3px 0 var(--ink);
+  }
+  .settingsBtn:hover{background:var(--grid);}
+
+  .settingsOverlay{
+    position:fixed;inset:0;z-index:1002;
+    background:rgba(18,20,26,0.55);
+    display:none;
+    align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .settingsOverlay.active{display:flex;}
+  .settingsCard{
+    background:var(--paper);
+    border:2px solid var(--ink);
+    border-radius:16px;
+    padding:22px 24px 26px;
+    max-width:340px;width:100%;
+    box-shadow:8px 8px 0 var(--ink);
+  }
+  .settingsHeader{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .settingsTitle{font-weight:800;font-size:19px;}
+  .settingsCloseBtn{
+    border:none;background:none;font-size:18px;cursor:pointer;
+    color:var(--ink-dim);line-height:1;padding:2px;
+  }
+  .settingsCloseBtn:hover{color:var(--ink);}
+  .settingsRow{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 0;border-top:1px solid var(--line);
+  }
+  .settingsRowLabel{font-weight:700;font-size:14px;}
+  .settingsDetailBtn{
+    border:2px solid var(--ink);background:var(--paper);color:var(--ink);
+    font-weight:800;font-size:12px;padding:6px 10px;border-radius:7px;
+    cursor:pointer;
+  }
+  .settingsDetailBtn:hover{background:var(--grid);}
+  .languageOptions{
+    display:none;flex-direction:column;gap:8px;
+    padding:4px 0 6px;
+  }
+  .languageOptions.open{display:flex;}
+  .langOption{
+    display:flex;align-items:center;justify-content:space-between;
+    border:2px solid var(--ink);border-radius:8px;
+    background:var(--paper);color:var(--ink);
+    font-weight:700;font-size:13px;padding:10px 12px;cursor:pointer;
+  }
+  .langOption:hover{background:var(--grid);}
+  .langOption.active{background:var(--blue);color:#fff;}
+
   footer{
     border-top:2px solid var(--ink);
     padding:18px 24px;text-align:center;
@@ -235,8 +296,9 @@
       <div>
         <div class="eyebrow"><span class="dot"></span> ARCADE ONLINE</div>
         <h1>Fun<span>Games</span><img src="Logo.png" width="45"></h1>
-        <p class="sub">브라우저에서 바로 즐기는 재미있는 게임 모음</p>
+        <p class="sub" id="subtitleEl">브라우저에서 바로 즐기는 재미있는 게임 모음</p>
       </div>
+      <button class="settingsBtn" id="settingsBtn">⚙ <span id="settingsBtnLabel">설정</span></button>
     </div>
 
     <div class="searchRow">
@@ -248,12 +310,29 @@
 </header>
 
 <main>
-  <div class="countRow"><span id="countNum">2</span>개의 게임</div>
+  <div class="countRow"><span id="countNum">2</span><span id="countSuffixEl">개의 게임</span></div>
   <div class="grid" id="grid"></div>
   <div class="emptyState" id="emptyState">검색 결과가 없어요. 다른 조건으로 찾아보세요.</div>
 </main>
 
 <footer>FUNGAMES — PRESS PLAY TO START</footer>
+
+<div class="settingsOverlay" id="settingsOverlay">
+  <div class="settingsCard">
+    <div class="settingsHeader">
+      <div class="settingsTitle" id="settingsTitleEl">설정</div>
+      <button class="settingsCloseBtn" id="settingsCloseBtn">✕</button>
+    </div>
+    <div class="settingsRow">
+      <div class="settingsRowLabel" id="languageLabelEl">언어</div>
+      <button class="settingsDetailBtn" id="languageDetailBtn">자세히 ▾</button>
+    </div>
+    <div class="languageOptions" id="languageOptions">
+      <button class="langOption" data-lang="ko">한국어</button>
+      <button class="langOption" data-lang="en">English</button>
+    </div>
+  </div>
+</div>
 
 <div class="gameOverlay" id="gameOverlay">
   <button class="gameCloseBtn" id="gameCloseBtn">✕ 닫기</button>
@@ -286,6 +365,46 @@
 
 const CATEGORIES = ['음악','총게임','서바이벌','만들기','퍼즐','모험게임','3D게임','기타'];
 
+const I18N = {
+  ko: {
+    settingsTitle:'설정',
+    settingsBtnLabel:'설정',
+    languageLabel:'언어',
+    detailBtn:'자세히 ▾',
+    subtitle:'브라우저에서 바로 즐기는 재미있는 게임 모음',
+    searchPlaceholder:'게임 이름으로 검색...',
+    playBtn:'▶ 플레이',
+    homepageBtn:'🏠 홈페이지',
+    countSuffix:'개의 게임',
+    emptyState:'검색 결과가 없어요. 다른 조건으로 찾아보세요.',
+    categories:{ '전체':'전체','음악':'음악','총게임':'총게임','서바이벌':'서바이벌','만들기':'만들기','퍼즐':'퍼즐','모험게임':'모험게임','3D게임':'3D게임','기타':'기타' },
+    gameNames:{
+      'builtin-eating-snakes':'뱀 먹기',
+      'builtin-chess':'체스',
+      'builtin-build-a-house-3d':'3D 집 만들기',
+      'builtin-wargame':'다리 전쟁',
+      'builtin-keyboard':'키보드',
+      'builtin-wordchain':'끝말잇기',
+      'builtin-wargame-3d':'다리 전쟁'
+    }
+  },
+  en: {
+    settingsTitle:'Settings',
+    settingsBtnLabel:'Settings',
+    languageLabel:'Language',
+    detailBtn:'Details ▾',
+    subtitle:'A collection of fun games you can play right in your browser',
+    searchPlaceholder:'Search by game name...',
+    playBtn:'▶ Play',
+    homepageBtn:'🏠 Homepage',
+    countSuffix:' games',
+    emptyState:'No search results found. Please try different criteria.',
+    categories:{ '전체':'All','음악':'Music','총게임':'Shooting games','서바이벌':'Survival','만들기':'Crafting','퍼즐':'Puzzles','모험게임':'Adventure games','3D게임':'3D games','기타':'Other' },
+    gameNames:{}
+  }
+};
+let currentLang = localStorage.getItem('fungames_lang') || 'en';
+
 const BUILTIN_GAMES = [
   {
     id:'builtin-eating-snakes',
@@ -294,6 +413,7 @@ const BUILTIN_GAMES = [
     url:'https://kangbaek-ho.github.io/eatingsnakes/',
     homeUrl:'https://kangbaek-ho.github.io/snakeshome/',
     faqUrl:'https://kangbaek-ho.github.io/faq/',
+    bgUrl:'https://kangbaek-ho.github.io/EatingSnakeshome/',
     thumbnail:'EatingSnakes.png',
     builtin:true,
     published:true,
@@ -323,6 +443,7 @@ const BUILTIN_GAMES = [
     category:'총게임',
     url:'https://kangbaek-ho.github.io/wargame/',
     thumbnail:'TheBridgeWar.png',
+    bgUrl:'https://kangbaek-ho.github.io/TheBridgeWarhome/',
     builtin:true,
     published:true,
     tag:'슈팅 · 전투'
@@ -337,11 +458,12 @@ const BUILTIN_GAMES = [
     tag:'유틸리티 · 재미'
   },
   {
-    id:'builtin-word chain',
-    name:'Word Chain',
+    id:'builtin-wordchain',
+    name:'WordChain',
     category:'퍼즐',
     url:'https://kangbaek-ho.github.io/WordChain/',
     thumbnail:'WordChain.png',
+    bgUrl:'https://kangbaek-ho.github.io/WordChainhome/',
     builtin:true,
     published:true,
     tag:'단어게임 · 퍼즐'
@@ -352,6 +474,7 @@ const BUILTIN_GAMES = [
     category:'3D게임',
     url:'https://kangbaek-ho.github.io/wargame/',
     thumbnail:'TheBridgeWar.png',
+    bgUrl:'https://kangbaek-ho.github.io/TheBridgeWarhome/',
     builtin:true,
     published:true,
     tag:'슈팅 · 3D',
@@ -818,7 +941,8 @@ let activeCategory = '전체';
 const catRow = document.getElementById('catRow');
 function renderCatChips(){
   const cats = ['전체', ...CATEGORIES];
-  catRow.innerHTML = cats.map(c=>`<button class="catChip ${c===activeCategory?'active':''}" data-cat="${c}">${c}</button>`).join('');
+  const t = I18N[currentLang];
+  catRow.innerHTML = cats.map(c=>`<button class="catChip ${c===activeCategory?'active':''}" data-cat="${c}">${escapeHtml(t.categories[c] || c)}</button>`).join('');
   catRow.querySelectorAll('.catChip').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       activeCategory = btn.dataset.cat;
@@ -830,6 +954,7 @@ function renderCatChips(){
 
 const grid = document.getElementById('grid');
 const countNum = document.getElementById('countNum');
+const countSuffixEl = document.getElementById('countSuffixEl');
 const emptyState = document.getElementById('emptyState');
 const searchInput = document.getElementById('searchInput');
 
@@ -837,33 +962,41 @@ function normalize(s){ return (s||'').toLowerCase().trim(); }
 
 function renderGrid(){
   const q = normalize(searchInput.value);
+  const t = I18N[currentLang];
   const games = getAllGames().filter(g=>{
     if(!g.published) return false;
     if(activeCategory==='전체' && g.hideInAll) return false;
     if(activeCategory!=='전체' && g.category!==activeCategory) return false;
-    if(q && !normalize(g.name).includes(q)) return false;
+    if(q){
+      const displayName = t.gameNames[g.id] || g.name;
+      if(!normalize(g.name).includes(q) && !normalize(displayName).includes(q)) return false;
+    }
     return true;
   });
 
   countNum.textContent = games.length;
+  countSuffixEl.textContent = t.countSuffix;
+  emptyState.textContent = t.emptyState;
   emptyState.style.display = games.length===0 ? 'block' : 'none';
 
-  grid.innerHTML = games.map(g=>`
-    <div class="gameCard">
+  grid.innerHTML = games.map(g=>{
+    const displayName = t.gameNames[g.id] || g.name;
+    return `
+    <div class="gameCard" data-id="${escapeHtml(g.id)}" data-bg="${g.bgUrl ? '1' : '0'}">
       <div class="thumb">
         ${thumbInnerHTML(g)}
       </div>
       <div class="cardBody">
-        <div class="gameTitle">${escapeHtml(g.name)}</div>
+        <div class="gameTitle">${escapeHtml(displayName)}</div>
         <div class="gameTag">${escapeHtml(g.tag || g.category)}</div>
-        <a class="playBtn" href="${escapeHtml(g.url)}" data-id="${escapeHtml(g.id)}" rel="noopener">▶ Play</a>
+        <a class="playBtn" href="${escapeHtml(g.url)}" data-id="${escapeHtml(g.id)}" rel="noopener">${escapeHtml(t.playBtn)}</a>
         <div class="linkRow">
-          ${g.homeUrl ? `<a class="linkBtn" href="${escapeHtml(g.homeUrl)}" target="_blank" rel="noopener">🏠 홈페이지</a>` : ''}
+          ${g.homeUrl ? `<a class="linkBtn" href="${escapeHtml(g.homeUrl)}" target="_blank" rel="noopener">${escapeHtml(t.homepageBtn)}</a>` : ''}
           ${g.faqUrl ? `<a class="linkBtn" href="${escapeHtml(g.faqUrl)}" target="_blank" rel="noopener">❓ FAQ</a>` : ''}
         </div>
       </div>
     </div>
-  `).join('');
+  `;}).join('');
 }
 
 searchInput.addEventListener('input', renderGrid);
@@ -874,11 +1007,69 @@ grid.addEventListener('click', (e)=>{
     e.preventDefault();
     const game = getAllGames().find(g=>g.id === btn.dataset.id);
     if(game) attemptOpen(game);
+    return;
+  }
+  if(e.target.closest('.linkBtn')) return;
+  const card = e.target.closest('.gameCard');
+  if(card){
+    const game = getAllGames().find(g=>g.id === card.dataset.id);
+    if(game && game.bgUrl){
+      window.open(game.bgUrl, '_blank', 'noopener');
+    }
   }
 });
 
 renderCatChips();
 renderGrid();
+
+// ---- settings / language ----
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsBtnLabel = document.getElementById('settingsBtnLabel');
+const settingsOverlay = document.getElementById('settingsOverlay');
+const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+const settingsTitleEl = document.getElementById('settingsTitleEl');
+const languageLabelEl = document.getElementById('languageLabelEl');
+const languageDetailBtn = document.getElementById('languageDetailBtn');
+const languageOptions = document.getElementById('languageOptions');
+const subtitleEl = document.getElementById('subtitleEl');
+
+function applyLanguage(lang){
+  currentLang = lang;
+  localStorage.setItem('fungames_lang', lang);
+  const t = I18N[currentLang];
+
+  settingsBtnLabel.textContent = t.settingsBtnLabel;
+  settingsTitleEl.textContent = t.settingsTitle;
+  languageLabelEl.textContent = t.languageLabel;
+  languageDetailBtn.textContent = t.detailBtn;
+  subtitleEl.textContent = t.subtitle;
+  searchInput.placeholder = t.searchPlaceholder;
+
+  languageOptions.querySelectorAll('.langOption').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+  });
+
+  renderCatChips();
+  renderGrid();
+}
+
+settingsBtn.addEventListener('click', ()=>{
+  settingsOverlay.classList.add('active');
+});
+settingsCloseBtn.addEventListener('click', ()=>{
+  settingsOverlay.classList.remove('active');
+});
+settingsOverlay.addEventListener('click', (e)=>{
+  if(e.target === settingsOverlay) settingsOverlay.classList.remove('active');
+});
+languageDetailBtn.addEventListener('click', ()=>{
+  languageOptions.classList.toggle('open');
+});
+languageOptions.querySelectorAll('.langOption').forEach(btn=>{
+  btn.addEventListener('click', ()=>applyLanguage(btn.dataset.lang));
+});
+
+applyLanguage(currentLang);
 </script>
 
 </body>
