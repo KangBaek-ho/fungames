@@ -386,6 +386,16 @@ const I18N = {
       'builtin-keyboard':'키보드',
       'builtin-wordchain':'끝말잇기',
       'builtin-wargame-3d':'다리 전쟁'
+    },
+    gameTags:{
+      'builtin-eating-snakes':'멀티플레이어 · 아케이드',
+      'builtin-chess':'보드게임 · 1인용',
+      'builtin-build-a-house-3d':'건축 · 만들기',
+      'builtin-wargame':'슈팅 · 전투',
+      'builtin-keyboard':'유틸리티 · 재미',
+      'builtin-wordchain':'단어게임 · 퍼즐',
+      'builtin-wargame-3d':'슈팅 · 3D',
+      'builtin-build-a-house-3d-cat':'건축 · 3D'
     }
   },
   en: {
@@ -400,7 +410,17 @@ const I18N = {
     countSuffix:' games',
     emptyState:'No search results found. Please try different criteria.',
     categories:{ '전체':'All','음악':'Music','총게임':'Shooting games','서바이벌':'Survival','만들기':'Crafting','퍼즐':'Puzzles','모험게임':'Adventure games','3D게임':'3D games','기타':'Other' },
-    gameNames:{}
+    gameNames:{},
+    gameTags:{
+      'builtin-eating-snakes':'Multiplayer · Arcade',
+      'builtin-chess':'Board game · Single-player',
+      'builtin-build-a-house-3d':'Building · Crafting',
+      'builtin-wargame':'Shooting · Combat',
+      'builtin-keyboard':'Utility · Fun',
+      'builtin-wordchain':'Word game · Puzzle',
+      'builtin-wargame-3d':'Shooting · 3D',
+      'builtin-build-a-house-3d-cat':'Building · 3D'
+    }
   }
 };
 let currentLang = localStorage.getItem('fungames_lang') || 'en';
@@ -981,6 +1001,7 @@ function renderGrid(){
 
   grid.innerHTML = games.map(g=>{
     const displayName = t.gameNames[g.id] || g.name;
+    const displayTag = t.gameTags[g.id] || g.tag || g.category;
     return `
     <div class="gameCard" data-id="${escapeHtml(g.id)}" data-bg="${g.bgUrl ? '1' : '0'}">
       <div class="thumb">
@@ -988,7 +1009,7 @@ function renderGrid(){
       </div>
       <div class="cardBody">
         <div class="gameTitle">${escapeHtml(displayName)}</div>
-        <div class="gameTag">${escapeHtml(g.tag || g.category)}</div>
+        <div class="gameTag">${escapeHtml(displayTag)}</div>
         <a class="playBtn" href="${escapeHtml(g.url)}" data-id="${escapeHtml(g.id)}" rel="noopener">${escapeHtml(t.playBtn)}</a>
         <div class="linkRow">
           ${g.homeUrl ? `<a class="linkBtn" href="${escapeHtml(g.homeUrl)}" target="_blank" rel="noopener">${escapeHtml(t.homepageBtn)}</a>` : ''}
