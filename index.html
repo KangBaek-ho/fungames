@@ -336,7 +336,7 @@
 
 <div class="gameOverlay" id="gameOverlay">
   <button class="gameCloseBtn" id="gameCloseBtn">✕ 닫기</button>
-  <iframe id="gameFrame" src="about:blank" allow="fullscreen; autoplay; gamepad; xr-spatial-tracking" allowfullscreen></iframe>
+  <iframe id="gameFrame" src="about:blank" allow="autoplay; gamepad"></iframe>
 </div>
 
 <div class="errorOverlay" id="errorOverlay">
@@ -634,53 +634,20 @@ document.addEventListener('click', (e)=>{
   }
 }, true);
 
-// ---- fullscreen ----
-// Fullscreen only survives while we stay on the SAME document, so instead of
-// navigating to each game (which always exits fullscreen), games open inside
-// an in-page overlay + iframe. That overlay is what goes fullscreen, and it
-// stays fullscreen no matter which game is loaded inside it.
-function requestFullscreenSafe(target){
-  const el = target || document.documentElement;
-  if(document.fullscreenElement || document.webkitFullscreenElement) return;
-  const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
-  if(req){
-    try{ const p = req.call(el); if(p && p.catch) p.catch(()=>{}); }catch(e){}
-  }
-}
+// ---- game overlay ----
 const gameOverlay = document.getElementById('gameOverlay');
 const gameFrame = document.getElementById('gameFrame');
 const gameCloseBtn = document.getElementById('gameCloseBtn');
 
-// Try to go fullscreen the instant the page is ready. Most browsers require
-// a user gesture for this, but if this page itself was reached via a click
-// (a link, a bookmark tap, etc.) that gesture can still count, so this often
-// succeeds without any extra click. As a fallback for browsers that block it
-// outright, also arm it on the very first interaction with the page.
-requestFullscreenSafe();
-['click','keydown','touchstart'].forEach(evt=>{
-  document.addEventListener(evt, ()=>requestFullscreenSafe(), {once:true, capture:true});
-});
-
 function openGameOverlay(game){
   gameFrame.src = game.url;
   gameOverlay.classList.add('active');
-  requestFullscreenSafe(gameOverlay);
 }
 function closeGameOverlay(){
   gameOverlay.classList.remove('active');
   gameFrame.src = 'about:blank';
-  if(document.fullscreenElement || document.webkitFullscreenElement){
-    (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
-  }
 }
 gameCloseBtn.addEventListener('click', closeGameOverlay);
-// If the user exits fullscreen (e.g. presses Esc) while a game is open,
-// close the overlay too instead of leaving a windowed game behind.
-document.addEventListener('fullscreenchange', ()=>{
-  if(!document.fullscreenElement && gameOverlay.classList.contains('active')){
-    closeGameOverlay();
-  }
-});
 
 const errorOverlay = document.getElementById('errorOverlay');
 const errorCodeEl = document.getElementById('errorCode');
