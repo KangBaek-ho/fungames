@@ -200,24 +200,6 @@
   }
   .offlineScoreRow b{color:var(--ink);}
 
-  .gameOverlay{
-    position:fixed;inset:0;z-index:1000;
-    background:#000;
-    display:none;
-  }
-  .gameOverlay.active{display:block;}
-  .gameOverlay iframe{
-    width:100%;height:100%;border:0;display:block;
-  }
-  .gameCloseBtn{
-    position:absolute;top:14px;right:14px;z-index:1001;
-    font-weight:800;font-size:13px;letter-spacing:0.3px;
-    padding:9px 14px;border-radius:8px;border:2px solid var(--ink);
-    background:var(--paper);color:var(--ink);cursor:pointer;
-    box-shadow:3px 3px 0 rgba(0,0,0,0.35);
-  }
-  .gameCloseBtn:hover{background:var(--grid);}
-
   .settingsBtn{
     font-weight:800;font-size:12px;letter-spacing:0.3px;
     padding:9px 13px;border-radius:8px;border:2px solid var(--ink);
@@ -332,11 +314,6 @@
       <button class="langOption" data-lang="en">English</button>
     </div>
   </div>
-</div>
-
-<div class="gameOverlay" id="gameOverlay">
-  <button class="gameCloseBtn" id="gameCloseBtn">✕ 닫기</button>
-  <iframe id="gameFrame" src="about:blank" allow="autoplay; gamepad"></iframe>
 </div>
 
 <div class="errorOverlay" id="errorOverlay">
@@ -634,20 +611,9 @@ document.addEventListener('click', (e)=>{
   }
 }, true);
 
-// ---- game overlay ----
-const gameOverlay = document.getElementById('gameOverlay');
-const gameFrame = document.getElementById('gameFrame');
-const gameCloseBtn = document.getElementById('gameCloseBtn');
-
-function openGameOverlay(game){
-  gameFrame.src = game.url;
-  gameOverlay.classList.add('active');
+function openGameInNewTab(game){
+  window.open(game.url, '_blank', 'noopener');
 }
-function closeGameOverlay(){
-  gameOverlay.classList.remove('active');
-  gameFrame.src = 'about:blank';
-}
-gameCloseBtn.addEventListener('click', closeGameOverlay);
 
 const errorOverlay = document.getElementById('errorOverlay');
 const errorCodeEl = document.getElementById('errorCode');
@@ -695,7 +661,7 @@ async function attemptOpen(game){
   try{
     await fetch(game.url, {mode:'no-cors', signal:controller.signal, cache:'no-store'});
     clearTimeout(timer);
-    openGameOverlay(game);
+    openGameInNewTab(game);
   }catch(err){
     clearTimeout(timer);
     if(!navigator.onLine){
