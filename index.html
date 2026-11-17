@@ -362,7 +362,10 @@ const I18N = {
       'builtin-wargame':'다리 전쟁',
       'builtin-keyboard':'키보드',
       'builtin-wordchain':'끝말잇기',
-      'builtin-wargame-3d':'다리 전쟁'
+      'builtin-wargame-3d':'다리 전쟁',
+      'builtin-cat-games':'고양이 게임들',
+      'builtin-jumpmap':'점프맵 만들기',
+      'builtin-creating-2d-game':'2D 게임 만들기'
     },
     gameTags:{
       'builtin-eating-snakes':'멀티플레이어 · 아케이드',
@@ -372,7 +375,10 @@ const I18N = {
       'builtin-keyboard':'유틸리티 · 재미',
       'builtin-wordchain':'단어게임 · 퍼즐',
       'builtin-wargame-3d':'슈팅 · 3D',
-      'builtin-build-a-house-3d-cat':'건축 · 3D'
+      'builtin-build-a-house-3d-cat':'건축 · 3D',
+      'builtin-cat-games':'서바이벌 · 고양이',
+      'builtin-jumpmap':'점프맵 · 만들기',
+      'builtin-creating-2d-game':'2D · 만들기'
     }
   },
   en: {
@@ -396,7 +402,10 @@ const I18N = {
       'builtin-keyboard':'Utility · Fun',
       'builtin-wordchain':'Word game · Puzzle',
       'builtin-wargame-3d':'Shooting · 3D',
-      'builtin-build-a-house-3d-cat':'Building · 3D'
+      'builtin-build-a-house-3d-cat':'Building · 3D',
+      'builtin-cat-games':'Survival · Cats',
+      'builtin-jumpmap':'Platformer · Crafting',
+      'builtin-creating-2d-game':'2D · Crafting'
     }
   }
 };
@@ -458,7 +467,7 @@ const BUILTIN_GAMES = [
     id:'builtin-wordchain',
     name:'WordChain',
     category:'퍼즐',
-    url:'https://kangbaek-ho.github.io/Word Chain/',
+    url:'https://kangbaek-ho.github.io/WordChain/',
     thumbnail:'WordChain.png',
     bgUrl:'https://kangbaek-ho.github.io/WordChainhome/',
     builtin:true,
@@ -486,6 +495,34 @@ const BUILTIN_GAMES = [
     published:true,
     tag:'건축 · 3D',
     hideInAll:true
+  },
+  {
+    id:'builtin-cat-games',
+    name:'cat games',
+    category:'서바이벌',
+    url:'https://kangbaek-ho.github.io/catgames/',
+    thumbnail:'cat_games.png',
+    builtin:true,
+    published:true,
+    tag:'서바이벌 · 고양이'
+  },
+  {
+    id:'builtin-jumpmap',
+    name:'make a jumpmap',
+    category:'만들기',
+    url:'https://kangbaek-ho.github.io/jumpmap/',
+    builtin:true,
+    published:true,
+    tag:'점프맵 · 만들기'
+  },
+  {
+    id:'builtin-creating-2d-game',
+    name:'creating a 2D games',
+    category:'만들기',
+    url:'https://kangbaek-ho.github.io/Creating-a-2D-Game/',
+    builtin:true,
+    published:true,
+    tag:'2D · 만들기'
   }
 ];
 
