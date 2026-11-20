@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>fungames</title>
+<link rel="icon" type="image/png" href="Logo.png">
+<link rel="apple-touch-icon" href="Logo.png">
 <style>
   @font-face{
     font-family:'PixelTitle';
@@ -200,6 +202,16 @@
   }
   .offlineScoreRow b{color:var(--ink);}
 
+  .headRight{display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+  .clock{
+    font-family:ui-monospace,'Courier New',monospace;
+    font-size:22px;font-weight:700;letter-spacing:2px;
+    color:var(--ink);background:var(--paper);
+    border:2px solid var(--ink);border-radius:8px;
+    padding:6px 12px;box-shadow:3px 3px 0 var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+
   .settingsBtn{
     font-weight:800;font-size:12px;letter-spacing:0.3px;
     padding:9px 13px;border-radius:8px;border:2px solid var(--ink);
@@ -280,7 +292,10 @@
         <h1>Fun<span>Games</span><img src="Logo.png" width="45"></h1>
         <p class="sub" id="subtitleEl">브라우저에서 바로 즐기는 재미있는 게임 모음</p>
       </div>
-      <button class="settingsBtn" id="settingsBtn">⚙ <span id="settingsBtnLabel">설정</span></button>
+      <div class="headRight">
+        <div class="clock" id="clock">00:00:00</div>
+        <button class="settingsBtn" id="settingsBtn">⚙ <span id="settingsBtnLabel">설정</span></button>
+      </div>
     </div>
 
     <div class="searchRow">
@@ -1061,6 +1076,15 @@ languageOptions.querySelectorAll('.langOption').forEach(btn=>{
 });
 
 applyLanguage(currentLang);
+
+// ---- clock (Korea time, KST) ----
+const clockEl = document.getElementById('clock');
+const kstFormatter = new Intl.DateTimeFormat('en-GB', {
+  timeZone:'Asia/Seoul', hour:'2-digit', minute:'2-digit', second:'2-digit', hourCycle:'h23'
+});
+function updateClock(){ clockEl.textContent = kstFormatter.format(new Date()); }
+updateClock();
+setInterval(updateClock, 1000);
 </script>
 
 </body>
