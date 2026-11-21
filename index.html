@@ -248,6 +248,11 @@
   .installBar img{width:34px;height:34px;border-radius:8px;}
   .installBar button{border:0;border-radius:10px;padding:8px 14px;font-weight:800;cursor:pointer;background:#ffc90e;color:#4a3200;font-family:inherit;}
   .installBar .installX{background:transparent;padding:6px 8px;color:#666;}
+  .gameFrameWrap{position:fixed;inset:0;z-index:9000;background:#000;display:none;flex-direction:column;}
+  .gameFrameBar{display:flex;align-items:center;gap:8px;background:#ffc90e;color:#4a3200;padding:6px 10px;padding-top:calc(6px + env(safe-area-inset-top,0px));font-weight:800;}
+  .gameFrameBar .gfTitle{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .gameFrameBar button{border:0;border-radius:10px;padding:7px 12px;font-weight:800;cursor:pointer;background:#fff;color:#4a3200;font-family:inherit;}
+  .gameFrameWrap iframe{flex:1;width:100%;border:0;background:#fff;}
   .clockOptions{max-height:220px;overflow-y:auto;}
   .clockOptions .langOption{flex-shrink:0;}
   .langOption small{font-weight:600;opacity:.7;margin-left:8px;}
@@ -403,6 +408,14 @@
   </div>
 </div>
 
+<div class="gameFrameWrap" id="gameFrameWrap">
+  <div class="gameFrameBar">
+    <button id="gfClose">✕ 닫기</button>
+    <span class="gfTitle" id="gfTitle"></span>
+    <button id="gfExternal" title="browser">↗</button>
+  </div>
+  <iframe id="gameFrame" allow="fullscreen; autoplay; gamepad; accelerometer; gyroscope; clipboard-write" allowfullscreen></iframe>
+</div>
 <div class="installBar" id="installBar">
   <img src="icon-192.png" alt="">
   <span id="installBarText">앱으로 설치하기</span>
@@ -726,7 +739,34 @@ document.addEventListener('click', (e)=>{
   }
 }, true);
 
+// 앱(설치된 상태)에서는 크롬으로 나가지 않고 앱 안에서 게임을 열어요.
+const gameFrameWrap = document.getElementById('gameFrameWrap');
+const gameFrame = document.getElementById('gameFrame');
+let gameFrameUrl = '';
+function inStandaloneApp(){
+  return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+}
+function openGameInApp(game){
+  gameFrameUrl = game.url;
+  const lang = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 'en' : 'ko';
+  document.getElementById('gfClose').textContent = lang === 'en' ? '✕ Close' : '✕ 닫기';
+  document.getElementById('gfTitle').textContent = game.name || '';
+  gameFrame.src = game.url;
+  gameFrameWrap.style.display = 'flex';
+  try{ history.pushState({fgGame:1}, ''); }catch(e){}
+}
+function closeGameInApp(fromPop){
+  if(gameFrameWrap.style.display !== 'flex') return;
+  gameFrameWrap.style.display = 'none';
+  gameFrame.src = 'about:blank';
+  if(!fromPop){ try{ if(history.state && history.state.fgGame) history.back(); }catch(e){} }
+}
+document.getElementById('gfClose').addEventListener('click', ()=>closeGameInApp(false));
+document.getElementById('gfExternal').addEventListener('click', ()=>{ try{ window.open(gameFrameUrl, '_blank'); }catch(e){} });
+window.addEventListener('popstate', ()=>closeGameInApp(true));   // 폰의 뒤로가기 버튼으로도 닫혀요
+
 function openGameInNewTab(game){
+  if(inStandaloneApp()){ openGameInApp(game); return true; }
   // noopener 를 쓰면 반환값이 항상 null 이라 성공 여부를 알 수 없어서, 열고 나서 opener 를 끊어요.
   let w = null;
   try{ w = window.open(game.url, '_blank'); }catch(e){ w = null; }
