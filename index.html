@@ -253,6 +253,10 @@
   .gameFrameBar .gfTitle{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .gameFrameBar button{border:0;border-radius:10px;padding:7px 12px;font-weight:800;cursor:pointer;background:#fff;color:#4a3200;font-family:inherit;}
   .gameFrameWrap iframe{flex:1;width:100%;border:0;background:#fff;}
+  .fgToast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:10000;background:#222;color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.3);display:none;max-width:90vw;}
+  .fgFlash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:10001;}
+  .fgFlash.go{animation:fgFlash .35s ease-out;}
+  @keyframes fgFlash{0%{opacity:.85}100%{opacity:0}}
   .clockOptions{max-height:220px;overflow-y:auto;}
   .clockOptions .langOption{flex-shrink:0;}
   .langOption small{font-weight:600;opacity:.7;margin-left:8px;}
@@ -1521,6 +1525,94 @@ inappBtn.addEventListener('click', ()=>{
   refreshInappLabel();
 });
 refreshInappLabel();
+
+// ---- F12: 화면 캡처 ----
+const CAP_T = {
+  ko:{doing:'캡처 중...', done:'캡처를 저장했어요 📸', fail:'캡처에 실패했어요 (인터넷 연결을 확인해 주세요)'},
+  en:{doing:'Capturing...', done:'Screenshot saved 📸', fail:'Capture failed (check your internet connection)'}
+};
+const capT = ()=>CAP_T[currentLang] || CAP_T.ko;
+const fgToast = document.createElement('div'); fgToast.className = 'fgToast'; document.body.appendChild(fgToast);
+const fgFlash = document.createElement('div'); fgFlash.className = 'fgFlash'; document.body.appendChild(fgFlash);
+let fgToastTimer = null;
+function showToast(msg, ms){
+  fgToast.textContent = msg; fgToast.style.display = 'block';
+  clearTimeout(fgToastTimer);
+  if(ms) fgToastTimer = setTimeout(()=>{ fgToast.style.display = 'none'; }, ms);
+}
+let html2canvasLoading = null;
+function loadHtml2Canvas(){
+  if(window.html2canvas) return Promise.resolve();
+  if(html2canvasLoading) return html2canvasLoading;
+  html2canvasLoading = new Promise((res, rej)=>{
+    const sc = document.createElement('script');
+    sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    sc.onload = res; sc.onerror = ()=>{ html2canvasLoading = null; rej(new Error('load')); };
+    document.head.appendChild(sc);
+  });
+  return html2canvasLoading;
+}
+let capturing = false;
+async function capturePage(){
+  if(capturing) return;
+  capturing = true;
+  showToast(capT().doing);
+  try{
+    await loadHtml2Canvas();
+    const canvas = await html2canvas(document.documentElement, {
+      useCORS:true, backgroundColor:null, scale:Math.min(window.devicePixelRatio || 1, 2),
+      width:window.innerWidth, height:window.innerHeight, windowWidth:window.innerWidth, windowHeight:window.innerHeight,
+      x:window.scrollX, y:window.scrollY,
+      ignoreElements:el=>el === fgToast || el === fgFlash
+    });
+    const a = document.createElement('a');
+    const d = new Date(), z = n=>String(n).padStart(2,'0');
+    a.download = `fungames-${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}.png`;
+    a.href = canvas.toDataURL('image/png');
+    document.body.appendChild(a); a.click(); a.remove();
+    fgFlash.classList.remove('go'); void fgFlash.offsetWidth; fgFlash.classList.add('go');
+    showToast(capT().done, 2200);
+  }catch(err){
+    showToast(capT().fail, 3000);
+  }
+  capturing = false;
+}
+window.addEventListener('keydown', e=>{
+  if(e.key === 'F12' || e.keyCode === 123){
+    e.preventDefault(); e.stopPropagation();
+    capturePage();
+  }
+}, true);
+
+// ---- 개발자 도구가 열리면 창 닫기 ----
+(function(){
+  let bypass = false;
+  try{
+    if(/[?&]dev=1\b/.test(location.search)) sessionStorage.setItem('fg_dev','1');
+    bypass = sessionStorage.getItem('fg_dev') === '1';
+  }catch(e){}
+  if(bypass) return;
+  let closed = false;
+  function shutDown(){
+    if(closed) return; closed = true;
+    try{ window.close(); }catch(e){}
+    try{ document.documentElement.innerHTML = ''; }catch(e){}
+    try{ location.replace('about:blank'); }catch(e){}
+  }
+  const bait = new Image();
+  Object.defineProperty(bait, 'id', { get(){ shutDown(); return ''; } });
+  function check(){
+    if(closed) return;
+    // 1) 개발자 도구가 열려 있으면 debugger 에서 멈춰서 시간이 오래 걸려요
+    const t0 = performance.now();
+    (function(){ debugger; })();
+    if(performance.now() - t0 > 120){ shutDown(); return; }
+    // 2) 콘솔이 열려 있으면 console.log 가 객체 속성을 읽어요
+    try{ console.log(bait); console.clear(); }catch(e){}
+  }
+  setInterval(check, 1000);
+  window.addEventListener('resize', check);
+})();
 </script>
 
 </body>
