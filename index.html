@@ -746,12 +746,13 @@ let gameFrameUrl = '';
 function inStandaloneApp(){
   return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
 }
-function openGameInApp(game){
-  gameFrameUrl = game.url;
+function openGameInApp(game){ openUrlInApp(game.url, game.name); }
+function openUrlInApp(url, title){
+  gameFrameUrl = url;
   const lang = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 'en' : 'ko';
   document.getElementById('gfClose').textContent = lang === 'en' ? '✕ Close' : '✕ 닫기';
-  document.getElementById('gfTitle').textContent = game.name || '';
-  gameFrame.src = game.url;
+  document.getElementById('gfTitle').textContent = title || '';
+  gameFrame.src = url;
   gameFrameWrap.style.display = 'flex';
   try{ history.pushState({fgGame:1}, ''); }catch(e){}
 }
@@ -1206,12 +1207,20 @@ grid.addEventListener('click', (e)=>{
     if(game) attemptOpen(game);
     return;
   }
-  if(e.target.closest('.linkBtn')) return;
+  const lb = e.target.closest('.linkBtn');
+  if(lb){
+    if(inStandaloneApp()){            // 앱에서는 새 탭 대신 앱 안에서 열어요
+      e.preventDefault();
+      openUrlInApp(lb.href, lb.textContent.trim());
+    }
+    return;
+  }
   const card = e.target.closest('.gameCard');
   if(card){
     const game = getAllGames().find(g=>g.id === card.dataset.id);
     if(game && game.bgUrl){
-      window.open(game.bgUrl, '_blank', 'noopener');
+      if(inStandaloneApp()) openUrlInApp(game.bgUrl, game.name);
+      else window.open(game.bgUrl, '_blank', 'noopener');
     }
   }
 });
