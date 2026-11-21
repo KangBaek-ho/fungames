@@ -403,6 +403,12 @@
   </div>
 </div>
 
+<div class="installBar" id="installBar">
+  <img src="icon-192.png" alt="">
+  <span id="installBarText">앱으로 설치하기</span>
+  <button id="installBarBtn">설치</button>
+  <button class="installX" id="installBarX" aria-label="close">✕</button>
+</div>
 <script>
 "use strict";
 
@@ -1402,18 +1408,26 @@ window.refreshInstallLabel = ()=>{
 refreshInstallLabel();
 if(isStandalone()){ installRow.style.display = 'none'; }
 const installBar = document.getElementById('installBar');
+const installBarText = document.getElementById('installBarText');
+const installBarBtn = document.getElementById('installBarBtn');
 const hideBar = ()=>{ installBar.style.display = 'none'; };
-window.addEventListener('beforeinstallprompt', e=>{
-  e.preventDefault(); deferredInstall = e;
-  let dismissed = false; try{ dismissed = sessionStorage.getItem('fg_install_x') === '1'; }catch(err){}
-  if(!dismissed && !isStandalone()){
-    document.getElementById('installBarText').textContent = currentLang === 'en' ? 'Install as an app' : '앱으로 설치하기';
-    document.getElementById('installBarBtn').textContent = instT().btn;
-    installBar.style.display = 'flex';
-  }
+let barDismissed = false; try{ barDismissed = sessionStorage.getItem('fg_install_x') === '1'; }catch(err){}
+function showBar(){
+  if(barDismissed || isStandalone()) return;
+  installBarText.textContent = currentLang === 'en' ? 'Install as an app' : '앱으로 설치하기';
+  installBarBtn.textContent = instT().btn;
+  installBarBtn.style.display = '';
+  installBar.style.display = 'flex';
+}
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredInstall = e; showBar(); });
+// 브라우저가 설치 창 신호를 안 줘도(아이폰 등) 안내 바는 항상 보여줘요.
+setTimeout(showBar, 1500);
+installBarBtn.addEventListener('click', async ()=>{
+  if(deferredInstall){ hideBar(); installBtn.click(); return; }
+  installBarText.textContent = isIOS ? instT().ios : instT().other;
+  installBarBtn.style.display = 'none';
 });
-document.getElementById('installBarBtn').addEventListener('click', ()=>{ hideBar(); installBtn.click(); });
-document.getElementById('installBarX').addEventListener('click', ()=>{ hideBar(); try{ sessionStorage.setItem('fg_install_x','1'); }catch(e){} });
+document.getElementById('installBarX').addEventListener('click', ()=>{ barDismissed = true; hideBar(); try{ sessionStorage.setItem('fg_install_x','1'); }catch(e){} });
 window.addEventListener('appinstalled', ()=>{ deferredInstall = null; hideBar(); installMsg.textContent = instT().done; });
 installBtn.addEventListener('click', async ()=>{
   if(deferredInstall){
@@ -1426,11 +1440,5 @@ installBtn.addEventListener('click', async ()=>{
 });
 </script>
 
-<div class="installBar" id="installBar">
-  <img src="icon-192.png" alt="">
-  <span id="installBarText">앱으로 설치하기</span>
-  <button id="installBarBtn">설치</button>
-  <button class="installX" id="installBarX" aria-label="close">✕</button>
-</div>
 </body>
 </html>
