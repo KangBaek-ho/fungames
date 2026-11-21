@@ -380,6 +380,10 @@
       <button class="settingsDetailBtn" id="installBtn">📲 <span id="installBtnLabel">설치</span></button>
     </div>
     <div class="offlineMsg settingsOfflineMsg" id="installMsg"></div>
+    <div class="settingsRow">
+      <div class="settingsRowLabel" id="inappLabelEl">앱 안에서 열기</div>
+      <button class="settingsDetailBtn" id="inappBtn">자동</button>
+    </div>
   </div>
 </div>
 
@@ -743,8 +747,19 @@ document.addEventListener('click', (e)=>{
 const gameFrameWrap = document.getElementById('gameFrameWrap');
 const gameFrame = document.getElementById('gameFrame');
 let gameFrameUrl = '';
+function detectApp(){
+  try{ if(/[?&]source=pwa\b/.test(location.search)) sessionStorage.setItem('fg_pwa','1'); }catch(e){}
+  let flag = false; try{ flag = sessionStorage.getItem('fg_pwa') === '1'; }catch(e){}
+  const mm = q => window.matchMedia && matchMedia(q).matches;
+  return flag || navigator.standalone === true || /^android-app:/.test(document.referrer || '') ||
+    mm('(display-mode: standalone)') || mm('(display-mode: fullscreen)') || mm('(display-mode: minimal-ui)') || mm('(display-mode: window-controls-overlay)');
+}
+function inAppPref(){ try{ return localStorage.getItem('fungames_inapp') || 'auto'; }catch(e){ return 'auto'; } }
 function inStandaloneApp(){
-  return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  const pref = inAppPref();
+  if(pref === 'on') return true;
+  if(pref === 'off') return false;
+  return detectApp();
 }
 function openGameInApp(game){ openUrlInApp(game.url, game.name); }
 function openUrlInApp(url, title){
@@ -1346,6 +1361,7 @@ function applyLanguage(lang){
   if(window.applyErrorText) applyErrorText();
   if(window.refreshClockLabels) refreshClockLabels();
   if(window.refreshInstallLabel) refreshInstallLabel();
+  if(window.refreshInappLabel) refreshInappLabel();
 }
 
 settingsBtn.addEventListener('click', ()=>{
@@ -1487,6 +1503,24 @@ installBtn.addEventListener('click', async ()=>{
   }
   installMsg.textContent = isIOS ? instT().ios : instT().other;
 });
+
+// ---- 게임/링크를 앱 안에서 열기 (자동 / 켜짐 / 꺼짐) ----
+const INAPP_T = {
+  ko:{label:'앱 안에서 열기', auto:'자동', on:'켜짐', off:'꺼짐'},
+  en:{label:'Open inside app', auto:'Auto', on:'On', off:'Off'}
+};
+const inappBtn = document.getElementById('inappBtn');
+window.refreshInappLabel = ()=>{
+  const t = INAPP_T[currentLang] || INAPP_T.ko;
+  document.getElementById('inappLabelEl').textContent = t.label;
+  inappBtn.textContent = t[inAppPref()];
+};
+inappBtn.addEventListener('click', ()=>{
+  const next = {auto:'on', on:'off', off:'auto'}[inAppPref()];
+  try{ localStorage.setItem('fungames_inapp', next); }catch(e){}
+  refreshInappLabel();
+});
+refreshInappLabel();
 </script>
 
 </body>
