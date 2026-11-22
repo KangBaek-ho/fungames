@@ -243,11 +243,6 @@
   .offlineMsg:empty{display:none;}
   .settingsOfflineMsg{text-align:left;max-width:none;padding:2px 0 4px;}
   .settingsDetailBtn:disabled{opacity:.6;cursor:default;}
-  .installBar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:9999;display:none;align-items:center;gap:10px;
-    background:#fff;border:2px solid #ffc90e;border-radius:14px;padding:10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:92vw;font-weight:700;}
-  .installBar img{width:34px;height:34px;border-radius:8px;}
-  .installBar button{border:0;border-radius:10px;padding:8px 14px;font-weight:800;cursor:pointer;background:#ffc90e;color:#4a3200;font-family:inherit;}
-  .installBar .installX{background:transparent;padding:6px 8px;color:#666;}
   .gameFrameWrap{position:fixed;inset:0;z-index:9000;background:#000;display:none;flex-direction:column;}
   .gameFrameBar{display:flex;align-items:center;gap:8px;background:#ffc90e;color:#4a3200;padding:6px 10px;padding-top:calc(6px + env(safe-area-inset-top,0px));font-weight:800;}
   .gameFrameBar .gfTitle{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -424,12 +419,6 @@
   </div>
   <iframe id="gameFrame" allow="fullscreen; autoplay; gamepad; accelerometer; gyroscope; clipboard-write" allowfullscreen></iframe>
 </div>
-<div class="installBar" id="installBar">
-  <img src="icon-192.png" alt="">
-  <span id="installBarText">앱으로 설치하기</span>
-  <button id="installBarBtn">설치</button>
-  <button class="installX" id="installBarX" aria-label="close">✕</button>
-</div>
 <script>
 "use strict";
 
@@ -598,6 +587,7 @@ const BUILTIN_GAMES = [
     name:'cat games',
     category:'서바이벌',
     url:'https://kangbaek-ho.github.io/catgames/',
+    bgUrl:'https://kangbaek-ho.github.io/catgameshome/',
     thumbnail:'cat_games.png',
     builtin:true,
     published:true,
@@ -1459,9 +1449,9 @@ offlineBtn.addEventListener('click', async ()=>{
 // ---- 앱 설치 (PWA) ----
 const INST_T = {
   ko:{label:'앱 설치', btn:'설치', ios:'아래 공유 버튼(□↑)을 누르고 "홈 화면에 추가"를 눌러 주세요.',
-      other:'브라우저 메뉴(⋮)에서 "앱 설치" 또는 "홈 화면에 추가"를 눌러 주세요.', done:'설치했어요! 홈 화면에서 열어 보세요.'},
+      other:'브라우저 오른쪽 위 \'⋮\' 클릭 ➡️ \'전송, 저장 공유\' 클릭 ➡️ \'페이지를 앱으로 설치\' 클릭 ➡️ 바탕화면에 설치 완료✅', done:'설치했어요! 홈 화면에서 열어 보세요.'},
   en:{label:'Install app', btn:'Install', ios:'Tap the Share button (□↑), then "Add to Home Screen".',
-      other:'Open the browser menu (⋮) and tap "Install app" or "Add to Home screen".', done:'Installed! Open it from your home screen.'}
+      other:'Top right of the browser, click \'⋮\' ➡️ \'Cast, save and share\' ➡️ \'Install page as app\' ➡️ Installed on your desktop ✅', done:'Installed! Open it from your home screen.'}
 };
 const instT = ()=>INST_T[currentLang] || INST_T.ko;
 const installRow = document.getElementById('installRow');
@@ -1476,35 +1466,8 @@ window.refreshInstallLabel = ()=>{
 };
 refreshInstallLabel();
 if(isStandalone()){ installRow.style.display = 'none'; }
-const installBar = document.getElementById('installBar');
-const installBarText = document.getElementById('installBarText');
-const installBarBtn = document.getElementById('installBarBtn');
-const hideBar = ()=>{ installBar.style.display = 'none'; };
-let barDismissed = false; try{ barDismissed = sessionStorage.getItem('fg_install_x') === '1'; }catch(err){}
-function showBar(){
-  if(barDismissed || isStandalone()) return;
-  installBarText.textContent = currentLang === 'en' ? 'Install as an app' : '앱으로 설치하기';
-  installBarBtn.textContent = instT().btn;
-  installBarBtn.style.display = '';
-  installBar.style.display = 'flex';
-}
-window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredInstall = e; showBar(); });
-// 브라우저가 설치 창 신호를 안 줘도(아이폰 등) 안내 바는 항상 보여줘요.
-setTimeout(showBar, 1500);
-installBarBtn.addEventListener('click', async ()=>{
-  if(deferredInstall){ hideBar(); installBtn.click(); return; }
-  installBarText.textContent = isIOS ? instT().ios : instT().other;
-  installBarBtn.style.display = 'none';
-});
-document.getElementById('installBarX').addEventListener('click', ()=>{ barDismissed = true; hideBar(); try{ sessionStorage.setItem('fg_install_x','1'); }catch(e){} });
-window.addEventListener('appinstalled', ()=>{ deferredInstall = null; hideBar(); installMsg.textContent = instT().done; });
-installBtn.addEventListener('click', async ()=>{
-  if(deferredInstall){
-    deferredInstall.prompt();
-    try{ await deferredInstall.userChoice; }catch(e){}
-    deferredInstall = null;
-    return;
-  }
+window.addEventListener('appinstalled', ()=>{ deferredInstall = null; installMsg.textContent = instT().done; });
+installBtn.addEventListener('click', ()=>{
   installMsg.textContent = isIOS ? instT().ios : instT().other;
 });
 
