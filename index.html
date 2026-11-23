@@ -1449,9 +1449,9 @@ offlineBtn.addEventListener('click', async ()=>{
 // ---- 앱 설치 (PWA) ----
 const INST_T = {
   ko:{label:'앱 설치', btn:'설치', ios:'아래 공유 버튼(□↑)을 누르고 "홈 화면에 추가"를 눌러 주세요.',
-      other:'브라우저 오른쪽 위 \'⋮\' 클릭 ➡️ \'전송, 저장 공유\' 클릭 ➡️ \'페이지를 앱으로 설치\' 클릭 ➡️ 바탕화면에 설치 완료✅', done:'설치했어요! 홈 화면에서 열어 보세요.'},
+      other:'브라우저 오른쪽 위 \'⋮\' 클릭 ➡️ \'전송, 저장 공유\' 클릭 ➡️ \'페이지를 앱으로 설치\' 클릭 ➡️ 바탕화면에 설치 완료✅', mobile:'브라우저 오른쪽 위 \'⋮\' 클릭 ➡️ \'앱 설치\' 또는 \'홈 화면에 추가\' 클릭 ➡️ 홈 화면에 설치 완료✅', done:'설치했어요! 바탕화면(홈 화면)에서 열어 보세요.'},
   en:{label:'Install app', btn:'Install', ios:'Tap the Share button (□↑), then "Add to Home Screen".',
-      other:'Top right of the browser, click \'⋮\' ➡️ \'Cast, save and share\' ➡️ \'Install page as app\' ➡️ Installed on your desktop ✅', done:'Installed! Open it from your home screen.'}
+      other:'Top right of the browser, click \'⋮\' ➡️ \'Cast, save and share\' ➡️ \'Install page as app\' ➡️ Installed on your desktop ✅', mobile:'Tap \'⋮\' at the top right ➡️ \'Install app\' or \'Add to Home screen\' ➡️ Installed on your home screen ✅', done:'Installed! Open it from your desktop / home screen.'}
 };
 const instT = ()=>INST_T[currentLang] || INST_T.ko;
 const installRow = document.getElementById('installRow');
@@ -1466,9 +1466,29 @@ window.refreshInstallLabel = ()=>{
 };
 refreshInstallLabel();
 if(isStandalone()){ installRow.style.display = 'none'; }
-window.addEventListener('appinstalled', ()=>{ deferredInstall = null; installMsg.textContent = instT().done; });
-installBtn.addEventListener('click', ()=>{
-  installMsg.textContent = isIOS ? instT().ios : instT().other;
+const isMobile = /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
+// 브라우저가 "설치 가능"이라고 알려 주면 저장해 둬요 (PC·안드로이드 크롬/엣지)
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredInstall = e; });
+window.addEventListener('appinstalled', ()=>{
+  deferredInstall = null;
+  installMsg.textContent = instT().done;
+  setTimeout(()=>{ installRow.style.display = 'none'; }, 3000);
+});
+installBtn.addEventListener('click', async ()=>{
+  if(deferredInstall){
+    // 한 번에 설치: 브라우저 설치 창이 바로 떠요
+    const ev = deferredInstall;
+    deferredInstall = null;
+    try{
+      ev.prompt();
+      const choice = await ev.userChoice;
+      if(choice && choice.outcome === 'accepted'){ installMsg.textContent = instT().done; return; }
+    }catch(e){}
+    installMsg.textContent = isMobile ? instT().mobile : instT().other;
+    return;
+  }
+  // 자동 설치를 쓸 수 없을 때(이미 설치됨, 아이폰, 주소가 https가 아님 등): 방법 안내
+  installMsg.textContent = isIOS ? instT().ios : (isMobile ? instT().mobile : instT().other);
 });
 
 // ---- 게임/링크를 앱 안에서 열기 (자동 / 켜짐 / 꺼짐) ----
