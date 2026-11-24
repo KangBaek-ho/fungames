@@ -446,8 +446,11 @@ const I18N = {
       'builtin-wordchain':'끝말잇기',
       'builtin-wargame-3d':'다리 전쟁',
       'builtin-cat-games':'고양이 게임들',
+      'builtin-clock-game':'시계게임',
+      'builtin-bombgame':'폭탄돌리기',
       'builtin-jumpmap':'점프맵 만들기',
-      'builtin-creating-2d-game':'2D 게임 만들기'
+      'builtin-creating-2d-game':'2D 게임 만들기',
+      'builtin-catrace':'고양이 레이스'
     },
     gameTags:{
       'builtin-eating-snakes':'멀티플레이어 · 아케이드',
@@ -459,8 +462,11 @@ const I18N = {
       'builtin-wargame-3d':'슈팅 · 3D',
       'builtin-build-a-house-3d-cat':'건축 · 3D',
       'builtin-cat-games':'서바이벌 · 고양이',
+      'builtin-clock-game':'서바이벌 · 시계',
+      'builtin-bombgame':'서바이벌 · 폭탄',
       'builtin-jumpmap':'점프맵 · 만들기',
-      'builtin-creating-2d-game':'2D · 만들기'
+      'builtin-creating-2d-game':'2D · 만들기',
+      'builtin-catrace':'레이싱 · 고양이'
     }
   },
   en: {
@@ -486,8 +492,11 @@ const I18N = {
       'builtin-wargame-3d':'Shooting · 3D',
       'builtin-build-a-house-3d-cat':'Building · 3D',
       'builtin-cat-games':'Survival · Cats',
+      'builtin-clock-game':'Survival · Clock',
+      'builtin-bombgame':'Survival · Bomb',
       'builtin-jumpmap':'Platformer · Crafting',
-      'builtin-creating-2d-game':'2D · Crafting'
+      'builtin-creating-2d-game':'2D · Crafting',
+      'builtin-catrace':'Racing · Cats'
     }
   }
 };
@@ -594,6 +603,26 @@ const BUILTIN_GAMES = [
     tag:'서바이벌 · 고양이'
   },
   {
+    id:'builtin-clock-game',
+    name:'clock game',
+    category:'서바이벌',
+    url:'https://kangbaek-ho.github.io/bombgame/',
+    thumbnail:'clock_game.png',
+    builtin:true,
+    published:true,
+    tag:'서바이벌 · 시계'
+  },
+  {
+    id:'builtin-bombgame',
+    name:'bombgame',
+    category:'서바이벌',
+    url:'https://kangbaek-ho.github.io/clockgame/',
+    thumbnail:'bomb_game.png',
+    builtin:true,
+    published:true,
+    tag:'서바이벌 · 폭탄'
+  },
+  {
     id:'builtin-jumpmap',
     name:'make a jumpmap',
     category:'만들기',
@@ -612,6 +641,15 @@ const BUILTIN_GAMES = [
     builtin:true,
     published:true,
     tag:'2D · 만들기'
+  },
+  {
+    id:'builtin-catrace',
+    name:'cat race',
+    category:'기타',
+    url:'https://kangbaek-ho.github.io/catrace/',
+    builtin:true,
+    published:true,
+    tag:'레이싱 · 고양이'
   }
 ];
 
